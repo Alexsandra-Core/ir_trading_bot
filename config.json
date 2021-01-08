@@ -1,0 +1,69 @@
+{
+  "Info": "You can customize all data here",
+  "ApiKey": "1f9a5ac7-8535-40a8-a506-552db0cb4450",
+  "ApiSecret": "7ac9d52652274f2cb80a1915babb8e9c",
+  "CT": 0.5,
+  "Data":
+  {
+    "Offer": [
+      {
+        "price": 1.2,
+        "volume": 1,
+        "primary_currency_code": "Dai",
+        "secondary_currency_code": "Aud",
+        "order_type": "LimitOffer"
+      },
+      {
+        "price": 1.3,
+        "volume": 1,
+        "primary_currency_code": "Dai",
+        "secondary_currency_code": "Aud",
+        "order_type": "LimitOffer"
+      },
+      {
+        "price": 1.3,
+        "volume": 1,
+        "primary_currency_code": "Dai",
+        "secondary_currency_code": "Aud",
+        "order_type": "LimitOffer"
+      },
+      {
+        "price": 1.3,
+        "volume": 1,
+        "primary_currency_code": "Dai",
+        "secondary_currency_code": "Aud",
+        "order_type": "LimitOffer"
+      }
+    ],
+    "Bid": [
+      {
+        "price": 1,
+        "volume": 2,
+        "primary_currency_code": "Dai",
+        "secondary_currency_code": "Aud",
+        "order_type": "LimitBid"
+      },
+      {
+        "price": 1,
+        "volume": 2,
+        "primary_currency_code": "Dai",
+        "secondary_currency_code": "Aud",
+        "order_type": "LimitBid"
+      },
+      {
+        "price": 1,
+        "volume": 2,
+        "primary_currency_code": "Dai",
+        "secondary_currency_code": "Aud",
+        "order_type": "LimitBid"
+      },
+      {
+        "price": 3,
+        "volume": 2,
+        "primary_currency_code": "Dai",
+        "secondary_currency_code": "Aud",
+        "order_type": "LimitBid"
+      }
+    ]
+  }
+}
