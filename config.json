@@ -1,68 +1,47 @@
 {
   "Info": "You can customize all data here",
-  "ApiKey": "1f9a5ac7-8535-40a8-a506-552db0cb4450",
-  "ApiSecret": "7ac9d52652274f2cb80a1915babb8e9c",
-  "CT": 0.5,
-  "Data":
-  {
+  "ApiKey": "4d49bf4c-0cd9-471b-bb7b-be80d6fcfbde",
+  "ApiSecret": "a9de564a325c4860a557a5b4a752e13e",
+  "CT": 0.05,
+  "CurrencyCode": {
+    "primary": "Dai",
+    "secondary": "Aud"
+  },
+  "Data": {
     "Offer": [
       {
-        "price": 1.2,
-        "volume": 1,
-        "primary_currency_code": "Dai",
-        "secondary_currency_code": "Aud",
-        "order_type": "LimitOffer"
+        "price": 0.01,
+        "volume": 3
       },
       {
-        "price": 1.3,
-        "volume": 1,
-        "primary_currency_code": "Dai",
-        "secondary_currency_code": "Aud",
-        "order_type": "LimitOffer"
+        "price": 0.02,
+        "volume": 3
       },
       {
-        "price": 1.3,
-        "volume": 1,
-        "primary_currency_code": "Dai",
-        "secondary_currency_code": "Aud",
-        "order_type": "LimitOffer"
+        "price": 0.03,
+        "volume": 3
       },
       {
-        "price": 1.3,
-        "volume": 1,
-        "primary_currency_code": "Dai",
-        "secondary_currency_code": "Aud",
-        "order_type": "LimitOffer"
+        "price": 0.04,
+        "volume": 3
       }
     ],
     "Bid": [
       {
-        "price": 1,
-        "volume": 2,
-        "primary_currency_code": "Dai",
-        "secondary_currency_code": "Aud",
-        "order_type": "LimitBid"
+        "price": 0.01,
+        "volume": 2
       },
       {
-        "price": 1,
-        "volume": 2,
-        "primary_currency_code": "Dai",
-        "secondary_currency_code": "Aud",
-        "order_type": "LimitBid"
+        "price": 0.02,
+        "volume": 2
       },
       {
-        "price": 1,
-        "volume": 2,
-        "primary_currency_code": "Dai",
-        "secondary_currency_code": "Aud",
-        "order_type": "LimitBid"
+        "price": 0.01,
+        "volume": 2
       },
       {
-        "price": 3,
-        "volume": 2,
-        "primary_currency_code": "Dai",
-        "secondary_currency_code": "Aud",
-        "order_type": "LimitBid"
+        "price": 0.01,
+        "volume": 2
       }
     ]
   }

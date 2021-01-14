@@ -1,6 +1,7 @@
 import requests
 import json
 import independentreserve as ir
+import time
 
 connection = ir.PublicMethods()
 
@@ -15,8 +16,10 @@ def current():
 
     # get BTCAUD from ir
     BTCAUD = connection.get_market_summary(primary_currency_code="Xbt", secondary_currency_code="Aud")['LastPrice']
+    time.sleep(1)
 
     # get DAIAUD
     AUDDAI = float(BTCDAI) / BTCAUD
     DAIAUD = 1 / AUDDAI
+
     return DAIAUD
