@@ -78,6 +78,7 @@ async def send_limit(CBP):
 
 
 async def replace_orders(orders):
+    global current_orders
     print(orders)
     filled_offers = []
     filled_bids = []
@@ -90,25 +91,32 @@ async def replace_orders(orders):
     # for replace the order most far from the baseline price first
     filled_temp_bids = sorted(filled_bids, key=(lambda x: x['Price']))
 
-    for item in filled_offers:
+    for item_offer in filled_offers:
         response = API.place_limit_order(
-            item['Price'],
-            item['Volume'],
+            item_offer['Price'],
+            item_offer['Volume'],
             primary_currency_code=PC,
             secondary_currency_code=SC,
             order_type='LimitOffer'
         )
         await asyncio.sleep(1)
+        for order_offer in current_orders:
+            if order_offer['OrderGuid'] == item_offer['OrderGuid']:
+                current_orders.remove(order_offer)
+
         print(f'filled offer replaced {response}')
-    for item in filled_temp_bids:
+    for item_bid in filled_temp_bids:
         response = API.place_limit_order(
-            item['Price'],
-            item['Volume'],
+            item_bid['Price'],
+            item_bid['Volume'],
             primary_currency_code=PC,
             secondary_currency_code=SC,
             order_type='LimitBid'
         )
         await asyncio.sleep(1)
+        for order_bid in current_orders:
+            if order_bid['OrderGuid'] == item_bid['OrderGuid']:
+                current_orders.remove(order_bid)
         print(f'filled bid replaced {response}')
 
 
@@ -201,6 +209,7 @@ async def check_limit(BP, UBP):
                 for item2 in recent_closed_filled_orders:
                     if item2['OrderGuid'] == item1['OrderGuid'] and item2['Status'] == 'Filled':
                         f_order = {
+                            'OrderGuid': item2['OrderGuid'],
                             'OrderType': item2['OrderType'],
                             'Volume': item2['Volume'],
                             'Price': item2['Price'],
