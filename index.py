@@ -228,8 +228,7 @@ def start():
 
 
 if __name__ == '__main__':
-    # Start foo as a process
-    p = multiprocessing.Process(target=start, name="Foo", args=(10,))
+    p = multiprocessing.Process(target=start, name="Start", args=(10,))
     p.start()
     time.sleep(3600)
     p.terminate()
