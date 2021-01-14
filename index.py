@@ -212,24 +212,13 @@ async def check_limit(BP, UBP):
                         filled_replace_response = replace_orders(f_order)
                         print(f'replaced\n{filled_replace_response}')
 
-
-def start():
-    global BP, UBP, START
-    while True:
-        if START is True:
-            asyncio.run(check_limit(BP, UBP))
-            UBP = BP
-            START = False
-        else:
-            BP = UBP
-            UBP = baseline.current()
-            asyncio.run(check_limit(BP, UBP))
-        time.sleep(30)
-
-
-if __name__ == '__main__':
-    p = multiprocessing.Process(target=start, name="Start", args=(10,))
-    p.start()
-    time.sleep(3600)
-    p.terminate()
-    p.join()
+while True:
+    if START is True:
+        asyncio.run(check_limit(BP, UBP))
+        UBP = BP
+        START = False
+    else:
+        BP = UBP
+        UBP = baseline.current()
+        asyncio.run(check_limit(BP, UBP))
+    time.sleep(30)
