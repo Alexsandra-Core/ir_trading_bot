@@ -2,6 +2,7 @@ import asyncio
 import independentreserve as ir
 import baseline
 import time
+import multiprocessing
 import json
 from order import cancel_all_orders
 from order import order_log
@@ -42,6 +43,9 @@ START = True
 # after submit orders
 current_orders = []
 
+# baseline price
+BP = baseline.current()
+
 
 # get CT value which should be get every 10s
 def get_ct(BP, UBP):
@@ -77,102 +81,89 @@ async def send_limit(CBP):
     return total_response
 
 
-async def replace_orders(orders):
-    global current_orders
-    print(orders)
-    filled_offers = []
-    filled_bids = []
-    for item in orders:
-        if item['OrderType'] == 'LimitOffer':
-            filled_offers.append(item)
-        if item['OrderType'] == 'LimitBid':
-            filled_bids.append(item)
-
-    # for replace the order most far from the baseline price first
-    filled_temp_bids = sorted(filled_bids, key=(lambda x: x['Price']))
-
-    for item_offer in filled_offers:
+async def replace_orders(order):
+    if order['OrderType'] == 'LimitOffer':
         response = API.place_limit_order(
-            item_offer['Price'],
-            item_offer['Volume'],
+            order['Price'],
+            order['Volume'],
             primary_currency_code=PC,
             secondary_currency_code=SC,
             order_type='LimitOffer'
         )
         await asyncio.sleep(1)
-        for order_offer in current_orders:
-            if order_offer['OrderGuid'] == item_offer['OrderGuid']:
-                current_orders.remove(order_offer)
+        return response
 
-        print(f'filled offer replaced {response}')
-    for item_bid in filled_temp_bids:
+    if order['OrderType'] == 'LimitBid':
         response = API.place_limit_order(
-            item_bid['Price'],
-            item_bid['Volume'],
+            order['Price'],
+            order['Volume'],
             primary_currency_code=PC,
             secondary_currency_code=SC,
             order_type='LimitBid'
         )
         await asyncio.sleep(1)
-        for order_bid in current_orders:
-            if order_bid['OrderGuid'] == item_bid['OrderGuid']:
-                current_orders.remove(order_bid)
-        print(f'filled bid replaced {response}')
+        return response
 
 
-async def replace_partial_filled_orders(orders):
-    for item in orders:
-        API.cancel_order(item['OrderGuid'])
+async def replace_partial_filled_orders(item):
+    replace_response = []
+    pri_balance, sec_balance = await get_balance()
+    if item['OrderType'] == 'LimitOffer' and pri_balance > item['Volume']:
+        response = API.place_limit_order(
+            item['Price'],
+            item['Volume'],
+            primary_currency_code=PC,
+            secondary_currency_code=SC,
+            order_type='LimitOffer'
+        )
         await asyncio.sleep(1)
+        print('balance available, so reserved amount was offered')
+        replace_response.append(response)
 
-        pri_balance, sec_balance = await get_balance()
-        if item['OrderType'] == 'LimitOffer' and pri_balance > item['Volume']:
+    if item['OrderType'] == 'LimitOffer' and pri_balance < item['Volume']:
+        if pri_balance > 0:
             response = API.place_limit_order(
                 item['Price'],
-                item['Volume'],
+                pri_balance,
                 primary_currency_code=PC,
                 secondary_currency_code=SC,
                 order_type='LimitOffer'
             )
             await asyncio.sleep(1)
-        if item['OrderType'] == 'LimitOffer' and pri_balance < item['Volume']:
-            if pri_balance > 0:
-                response = API.place_limit_order(
-                    item['Price'],
-                    pri_balance,
-                    primary_currency_code=PC,
-                    secondary_currency_code=SC,
-                    order_type='LimitOffer'
-                )
-                await asyncio.sleep(1)
+            print('balance is not available, so balance was offered')
+            replace_response.append(response)
 
-        if item['OrderType'] == 'LimitBid' and sec_balance > item['Value']:
+    if item['OrderType'] == 'LimitBid' and sec_balance > item['Value']:
+        response = API.place_limit_order(
+            item['Price'],
+            item['Volume'],
+            primary_currency_code=PC,
+            secondary_currency_code=SC,
+            order_type='LimitBid'
+        )
+        await asyncio.sleep(1)
+        print('balance available, so reserved amount was bidded')
+        replace_response.append(response)
+
+    if item['OrderType'] == 'LimitBid' and sec_balance < item['Value']:
+        if sec_balance > 0:
             response = API.place_limit_order(
                 item['Price'],
-                item['Volume'],
+                sec_balance / item['Volume'],
                 primary_currency_code=PC,
                 secondary_currency_code=SC,
                 order_type='LimitBid'
             )
             await asyncio.sleep(1)
-        if item['OrderType'] == 'LimitBid' and sec_balance < item['Value']:
-            if sec_balance > 0:
-                response = API.place_limit_order(
-                    item['Price'],
-                    sec_balance / item['Volume'],
-                    primary_currency_code=PC,
-                    secondary_currency_code=SC,
-                    order_type='LimitBid'
-                )
-                await asyncio.sleep(1)
-        print(f'replaced partial filled orders after cancel that. \n {response}')
+            print('balance is not available, so amount for balance was bidded')
+            replace_response.append(response)
+
+    return replace_response
 
 
 # check CT and account balance
 async def check_limit(BP, UBP):
     global current_orders
-    filled_orders = []
-    partial_filled_orders = []
     pri_balance, sec_balance = await get_balance()
     if UBP == 0:
         offer_reserved_amount, bid_reserved_amount = get_reserved_amount(BP)
@@ -182,32 +173,33 @@ async def check_limit(BP, UBP):
     else:
         offer_reserved_amount, bid_reserved_amount = get_reserved_amount(UBP)
         CT = get_ct(BP, UBP)
-        print(f'BP = {BP}, UBP = {UBP}, CT = {CT}')
         if CT > SCT:
+            print(f'CT > {SCT} =>')
             await cancel_all_orders()
             if pri_balance > offer_reserved_amount and sec_balance > bid_reserved_amount:
                 current_orders = await send_limit(UBP)
-
+            else:
+                print('Account balance is not available')
         else:
-            print(f'No place new orders because CT < {SCT}')
-            print(f'CT < {SCT}, so checking filled orders and replacing.')
+            print(f'CT < {SCT} => \nso checking filled orders and replacing.')
             recent_closed_filled_orders = await handle_filled_orders()
             recent_open_orders = await get_open_orders_info()
-            print(f'current orders are {len(current_orders)} ones')
 
             # process for partial filled orders
             for item in recent_open_orders['Data']:
                 if item['Status'] == 'PartiallyFilled':
-                    partial_filled_orders.append(item)
-            if len(partial_filled_orders) > 0:
-                await replace_partial_filled_orders(partial_filled_orders)
-            else:
-                print('No partial filled orders')
+                    print(f'This order is partially filled.\n{item}')
+                    print(f'So, we have to cancel this order and replace')
+                    cancel_response = API.cancel_order(item['OrderGuid'])
+                    await asyncio.sleep(1)
+                    print(f'Cancelled this order. Look this response\n{cancel_response}')
+                    replace_response = replace_partial_filled_orders(item)
+                    print(f'replace this order.\n{replace_response}')
 
             # process for filled orders
             for item1 in current_orders:
                 for item2 in recent_closed_filled_orders:
-                    if item2['OrderGuid'] == item1['OrderGuid'] and item2['Status'] == 'Filled':
+                    if item2['OrderGuid'] == item1['OrderGuid']:
                         f_order = {
                             'OrderGuid': item2['OrderGuid'],
                             'OrderType': item2['OrderType'],
@@ -215,23 +207,30 @@ async def check_limit(BP, UBP):
                             'Price': item2['Price'],
                             'Status': item2['Status']
                         }
-                        filled_orders.append(f_order)
-            if len(filled_orders) > 0:
-                await replace_orders(filled_orders)
-            else:
-                print('No filled orders')
+                        print(f'This order is filled.\n{f_order}')
+                        print(f'So, we have to replace this order')
+                        filled_replace_response = replace_orders(f_order)
+                        print(f'replaced\n{filled_replace_response}')
 
 
-# baseline price
-BP = baseline.current()
+def start():
+    global BP, UBP, START
+    while True:
+        if START is True:
+            asyncio.run(check_limit(BP, UBP))
+            UBP = BP
+            START = False
+        else:
+            BP = UBP
+            UBP = baseline.current()
+            asyncio.run(check_limit(BP, UBP))
+        time.sleep(30)
 
-while True:
-    if START is True:
-        asyncio.run(check_limit(BP, UBP))
-        UBP = BP
-        START = False
-    else:
-        BP = UBP
-        UBP = baseline.current()
-        asyncio.run(check_limit(BP, UBP))
-    time.sleep(20)
+
+if __name__ == '__main__':
+    # Start foo as a process
+    p = multiprocessing.Process(target=start, name="Foo", args=(10,))
+    p.start()
+    time.sleep(3600)
+    p.terminate()
+    p.join()

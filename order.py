@@ -14,7 +14,7 @@ async def get_open_orders_info():
         primary_currency_code=config['CurrencyCode']['primary'],
         secondary_currency_code=config['CurrencyCode']['secondary'],
         page_index=1,
-        page_size=10
+        page_size=25
     )
     await asyncio.sleep(1)
     return open_orders
