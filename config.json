@@ -2,7 +2,7 @@
   "Info": "You can customize all data here",
   "ApiKey": "4d49bf4c-0cd9-471b-bb7b-be80d6fcfbde",
   "ApiSecret": "a9de564a325c4860a557a5b4a752e13e",
-  "CT": 0.05,
+  "CT": 0.5,
   "CurrencyCode": {
     "primary": "Dai",
     "secondary": "Aud"
@@ -10,38 +10,38 @@
   "Data": {
     "Offer": [
       {
-        "price": 0.01,
+        "price": 0.001,
+        "volume": 1
+      },
+      {
+        "price": 0.002,
+        "volume": 2
+      },
+      {
+        "price": 0.003,
         "volume": 3
       },
       {
-        "price": 0.02,
-        "volume": 3
-      },
-      {
-        "price": 0.03,
-        "volume": 3
-      },
-      {
-        "price": 0.04,
-        "volume": 3
+        "price": 0.004,
+        "volume": 4
       }
     ],
     "Bid": [
       {
-        "price": 0.01,
+        "price": 0.001,
+        "volume": 1
+      },
+      {
+        "price": 0.002,
         "volume": 2
       },
       {
-        "price": 0.02,
-        "volume": 2
+        "price": 0.003,
+        "volume": 3
       },
       {
-        "price": 0.01,
-        "volume": 2
-      },
-      {
-        "price": 0.01,
-        "volume": 2
+        "price": 0.004,
+        "volume": 4
       }
     ]
   }
