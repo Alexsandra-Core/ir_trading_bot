@@ -45,6 +45,7 @@ def cancel_all_orders():
 def account_balance():
     response = API.get_accounts()
     time.sleep(1)
+    print(response)
     return response
 
 
@@ -56,7 +57,6 @@ def handle_filled_orders():
         page_size=50
     )
     time.sleep(1)
-    num_orders = len(config['Data']['Offer']) + len(config['Data']['Bid'])
     return closed_filled_orders['Data'][0:16]
 
 

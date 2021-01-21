@@ -106,7 +106,7 @@ def replace_orders(order):
 
 def replace_partial_filled_orders(item):
     pri_balance, sec_balance = get_balance()
-    if item['OrderType'] == 'LimitOffer' and pri_balance > item['Volume']:
+    if item['OrderType'] == 'LimitOffer' and item['Volume'] < pri_balance:
         response = API.place_limit_order(
             item['Price'],
             item['Volume'],
@@ -115,10 +115,9 @@ def replace_partial_filled_orders(item):
             order_type='LimitOffer'
         )
         time.sleep(1)
-        print(response)
         return response
 
-    if item['OrderType'] == 'LimitOffer' and pri_balance < item['Volume']:
+    if item['OrderType'] == 'LimitOffer' and item['Volume'] > pri_balance:
         if pri_balance > 0:
             response = API.place_limit_order(
                 item['Price'],
@@ -128,10 +127,9 @@ def replace_partial_filled_orders(item):
                 order_type='LimitOffer'
             )
             time.sleep(1)
-            print(response)
             return response
 
-    if item['OrderType'] == 'LimitBid' and sec_balance > item['Value']:
+    if item['OrderType'] == 'LimitBid' and item['Volume'] * item['Price'] < sec_balance:
         response = API.place_limit_order(
             item['Price'],
             item['Volume'],
@@ -140,10 +138,9 @@ def replace_partial_filled_orders(item):
             order_type='LimitBid'
         )
         time.sleep(1)
-        print(response)
         return response
 
-    if item['OrderType'] == 'LimitBid' and sec_balance < item['Value']:
+    if item['OrderType'] == 'LimitBid' and item['Volume'] * item['Price'] > sec_balance:
         if sec_balance > 0:
             response = API.place_limit_order(
                 item['Price'],
@@ -153,7 +150,6 @@ def replace_partial_filled_orders(item):
                 order_type='LimitBid'
             )
             time.sleep(1)
-            print(response)
             return response
 
 
@@ -171,7 +167,7 @@ def check_limit(BP, UBP):
     else:
         offer_reserved_amount, bid_reserved_amount = get_reserved_amount(UBP)
         CT = get_ct(BP, UBP)
-        print(f'BP = {BP}, UBP = {UBP}, CT = {CT}\n')
+        print(f'BP = {BP}, UBP = {UBP}, CT = {CT}')
         if CT > SCT:
             cancel_all_orders()
             print(f'CT > {SCT}: Cancelled all orders')
@@ -180,31 +176,15 @@ def check_limit(BP, UBP):
             else:
                 print('Account balance is not available')
         else:
-            print(f'CT < {SCT}: See if filled or partial filled orders are. \n')
+            print(f'CT < {SCT}: Check order status...')
             recent_open_orders = get_open_orders_info()
 
-            for i in recent_open_orders['Data']:
-                print(i['OrderGuid'], i['OrderType'], i['Price'],  i['Volume'])
-
-            # process for partial filled orders
-            for item in recent_open_orders['Data']:
-                if item['Status'] == 'PartiallyFilled':
-                    print('-----Partial Filled-----\n', item['OrderGuid'], item['OrderType'], item['Price'],  item['Volume'], item['Status'])
-                    print('Cancelling this order...\n')
-                    res = API.cancel_order(item['OrderGuid'])
-                    time.sleep(1)
-                    print('This partial filled order was cancelled\n', res)
-
-                    list(filter(lambda i: i['OrderGuid'] != item['OrderGuid'], current_orders))
-
-                    print('Replacing this order again...\n')
-                    response = replace_partial_filled_orders(item)
-                    print('This order was replaced\n', response['OrderGuid'], response['OrderType'], response['Price'], response['Volume'], response['Status'])
-
-                    current_orders.append(response)
+            for ite in recent_open_orders['Data']:
+                print(f'{ite["OrderGuid"]}, {ite["OrderType"]}, {ite["Price"]}, {ite["Volume"]}')
 
             # process for filled orders
             recent_closed_filled_orders = handle_filled_orders()
+
             for item1 in current_orders:
                 for item2 in recent_closed_filled_orders:
                     if item2['OrderGuid'] == item1['OrderGuid'] and item2['Status'] == 'Filled':
@@ -216,15 +196,44 @@ def check_limit(BP, UBP):
                             'Status': item2['Status']
                         }
 
-                        list(filter(lambda i: i['OrderGuid'] != f_order['OrderGuid'], current_orders))
+                        print(f'\n{"* * * * * * * * *" * 5}')
+                        current_orders = list(filter(lambda i: i['OrderGuid'] != f_order['OrderGuid'], current_orders))
 
-                        print('-----Filled-----\n', f_order['OrderGuid'], f_order['OrderType'], f_order['Price'], f_order['Volume'], f_order['Status'])
-                        print('Replacing this order again...\n')
+                        print(f_order['OrderGuid'], f_order['OrderType'], f_order['Price'], f_order['Volume'], f_order['Status'])
+
                         filled_replace_response = replace_orders(f_order)
-                        print('This order was replaced\n', filled_replace_response['OrderGuid'], filled_replace_response['OrderType'],
-                              filled_replace_response['Price'], filled_replace_response['Volume'], filled_replace_response['Status'])
+                        print(filled_replace_response['OrderGuid'],
+                              filled_replace_response['Type'],
+                              filled_replace_response['Price'],
+                              filled_replace_response['VolumeOrdered'],
+                              filled_replace_response['Status'])
 
                         current_orders.append(filled_replace_response)
+
+            # process for partial filled orders
+            for item in recent_open_orders['Data']:
+                if item['Status'] == 'PartiallyFilled':
+                    print(f'\n{"* * * * * * * * *" * 5}')
+
+                    print(item['OrderGuid'], item['OrderType'], item['Price'], item['Volume'], item['Status'])
+                    cancel_res = API.cancel_order(item['OrderGuid'])
+                    time.sleep(1)
+                    print(cancel_res['OrderGuid'],
+                          cancel_res['Type'],
+                          cancel_res['Price'],
+                          cancel_res['VolumeOrdered'],
+                          cancel_res['Status'])
+
+                    current_orders = list(filter(lambda i: i['OrderGuid'] != item['OrderGuid'], current_orders))
+
+                    replace_res = replace_partial_filled_orders(item)
+                    print(replace_res['OrderGuid'],
+                          replace_res['Type'],
+                          replace_res['Price'],
+                          replace_res['VolumeOrdered'],
+                          replace_res['Status'])
+
+                    current_orders.append(replace_res)
 
 
 while True:
