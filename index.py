@@ -47,6 +47,9 @@ BP = baseline.current()
 # get interval for the order cycle
 interval = config['CheckTimeInterval']
 
+# set global timestamp
+timestamp = time.time()
+
 
 # get CT value which should be get every 10s
 def get_ct(BP, UBP):
@@ -157,9 +160,10 @@ def replace_partial_filled_orders(item):
 
 # check CT and account balance
 def check_limit(BP, UBP):
-    global current_orders
+    global current_orders, timestamp
     pri_balance, sec_balance = get_balance()
-    print(f'Current time: {time.time()}')
+    print(f'Consumed time: {round(time.time() - timestamp)}')
+    timestamp = time.time()
     if UBP == 0:
         offer_reserved_amount, bid_reserved_amount = get_reserved_amount(BP)
         print(f'Start -> BP = {BP}')
