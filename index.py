@@ -162,7 +162,7 @@ def replace_partial_filled_orders(item):
 def check_limit(BP, UBP):
     global current_orders, timestamp
     pri_balance, sec_balance = get_balance()
-    print(f'Consumed time: {round(time.time() - timestamp)}')
+    print(f'Consumed time: {round(time.time() - timestamp)}s')
     timestamp = time.time()
     if UBP == 0:
         offer_reserved_amount, bid_reserved_amount = get_reserved_amount(BP)
