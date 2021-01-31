@@ -3,6 +3,7 @@
   "ApiKey": "d241be0d-7a54-42e6-b3eb-8653fce4d4bc",
   "ApiSecret": "f78f6a7f23ae4df3bace91ae89158aad",
   "CT": 0.5,
+  "CheckTimeInterval": 5,
   "CurrencyCode": {
     "primary": "Dai",
     "secondary": "Aud"

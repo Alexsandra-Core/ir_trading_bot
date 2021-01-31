@@ -4,11 +4,15 @@ import independentreserve as ir
 import time
 
 connection = ir.PublicMethods()
+with open('config.json', 'r') as file:
+    config = json.loads(file.read())
+
+primaryCode = config['CurrencyCode']['primary']
+secondaryCode = config['CurrencyCode']['secondary']
 
 
-# get DAIAUD
+# get baseline price for the custom symbol
 def current():
-    # get average price for BTCDAI from binance
     payload = {}
     headers = {}
     url = 'https://api3.binance.com/api/v3/avgPrice?symbol=BTCDAI'
