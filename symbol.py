@@ -46,4 +46,5 @@ def get_limit_price():
         bids.append(item['price'])
     return max(offers), max(bids)
 
+
 get_balance()

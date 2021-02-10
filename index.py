@@ -1,6 +1,7 @@
 import independentreserve as ir
 import baseline
 import time
+import datetime
 import json
 from order import cancel_all_orders
 from order import order_log
@@ -46,9 +47,6 @@ BP = baseline.current()
 
 # get interval for the order cycle
 interval = config['CheckTimeInterval']
-
-# set global timestamp
-timestamp = time.time()
 
 
 # get CT value which should be get every 10s
@@ -160,10 +158,10 @@ def replace_partial_filled_orders(item):
 
 # check CT and account balance
 def check_limit(BP, UBP):
-    global current_orders, timestamp
+    global current_orders
     pri_balance, sec_balance = get_balance()
-    print(f'Consumed time: {round(time.time() - timestamp)}s')
-    timestamp = time.time()
+    print(f'Timestamp: {datetime.datetime.now()}')
+
     if UBP == 0:
         offer_reserved_amount, bid_reserved_amount = get_reserved_amount(BP)
         print(f'Start -> BP = {BP}')
