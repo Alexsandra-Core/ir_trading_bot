@@ -168,7 +168,7 @@ def check_limit(BP, UBP):
         if pri_balance > offer_reserved_amount and sec_balance > bid_reserved_amount:
             current_orders = send_limit(BP)
         else:
-            print('Account balance is not available')
+            print('UBP: Account balance is not available')
     else:
         offer_reserved_amount, bid_reserved_amount = get_reserved_amount(UBP)
         CT = get_ct(BP, UBP)
@@ -232,11 +232,7 @@ def check_limit(BP, UBP):
                     current_orders = list(filter(lambda i: i['OrderGuid'] != item['OrderGuid'], current_orders))
 
                     replace_res = replace_partial_filled_orders(item)
-                    print(replace_res['OrderGuid'],
-                          replace_res['Type'],
-                          replace_res['Price'],
-                          replace_res['VolumeOrdered'],
-                          replace_res['Status'])
+                    print(replace_res['OrderGuid'], replace_res['Type'], replace_res['Price'], replace_res['VolumeOrdered'], replace_res['Status'])
 
                     current_orders.append(replace_res)
 

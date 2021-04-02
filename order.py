@@ -1,6 +1,5 @@
 import independentreserve as ir
 import json
-import asyncio
 import time
 
 with open('config.json', 'r') as file:
@@ -45,7 +44,6 @@ def cancel_all_orders():
 def account_balance():
     response = API.get_accounts()
     time.sleep(1)
-    print(response)
     return response
 
 
@@ -75,9 +73,10 @@ def order_log(res):
     for item in res:
         print(f'{item["Type"]} - Volume: {item["VolumeOrdered"]}, Price: {item["Price"]}')
 
+
 if __name__ == '__main__':
-    # asyncio.run(handle_filled_orders())
+    # handle_filled_orders()
     # account_balance()
-    # asyncio.run(get_open_orders_info())
+    # get_open_orders_info()
     cancel_all_orders()
     # get_order_amount()

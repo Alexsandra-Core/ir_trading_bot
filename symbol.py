@@ -23,6 +23,8 @@ def get_balance():
             pri_available_balance = item['AvailableBalance']
         if item['CurrencyCode'] == sec_code:
             sec_available_balance = item['AvailableBalance']
+
+    print(pri_available_balance, sec_available_balance)
     return pri_available_balance, sec_available_balance
 
 
